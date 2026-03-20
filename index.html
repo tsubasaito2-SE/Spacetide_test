@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宇宙ビジネス入門 — テスト勉強</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --space-dark: #030712;
+    --space-deep: #0a0f1e;
+    --space-mid: #0f1d3a;
+    --accent-blue: #3b82f6;
+    --accent-cyan: #06b6d4;
+    --accent-gold: #f59e0b;
+    --accent-green: #10b981;
+    --accent-red: #ef4444;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #475569;
+    --card-bg: rgba(15, 29, 58, 0.7);
+    --card-border: rgba(59, 130, 246, 0.15);
+    --star-color: rgba(255,255,255,0.7);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--space-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Stars background */
+  .stars-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
+    opacity: var(--op, 0.6);
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: var(--op, 0.6); transform: scale(1); }
+    50% { opacity: 0.1; transform: scale(0.5); }
+  }
+
+  .nebula {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .nebula-1 { width: 600px; height: 400px; background: radial-gradient(circle, rgba(59,130,246,0.08), transparent); top: -100px; left: -100px; }
+  .nebula-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(6,182,212,0.06), transparent); bottom: 200px; right: -100px; }
+
+  /* Layout */
+  .container { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 20px; }
+
+  /* Header */
+  header {
+    padding: 60px 0 40px;
+    text-align: center;
+  }
+  .badge {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    background: rgba(6,182,212,0.1);
+    border: 1px solid rgba(6,182,212,0.3);
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #fff 0%, var(--accent-cyan) 50%, var(--accent-blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  .subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 300;
+  }
+
+  /* Progress */
+  .progress-bar-wrap {
+    background: rgba(255,255,255,0.05);
+    border-radius: 100px;
+    height: 6px;
+    margin: 30px 0 8px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+  .progress-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: right;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    flex: 1;
+    min-width: 120px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+  }
+  .stat-chip .num {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-chip .label { font-size: 0.75rem; color: var(--text-muted); }
+  .stat-chip.total .num { color: var(--text-primary); }
+  .stat-chip.correct .num { color: var(--accent-green); }
+  .stat-chip.wrong .num { color: var(--accent-red); }
+  .stat-chip.remaining .num { color: var(--accent-cyan); }
+
+  /* Category tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+  }
+  .tab {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 100px;
+    border: 1px solid var(--card-border);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+  .tab.active { background: var(--accent-blue); border-color: var(--accent-blue); color: white; }
+
+  /* Mode toggle */
+  .mode-wrap {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    align-items: center;
+  }
+  .mode-btn {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mode-btn.active { background: rgba(245,158,11,0.15); border-color: var(--accent-gold); color: var(--accent-gold); }
+  .mode-label { font-size: 0.8rem; color: var(--text-muted); margin-left: 4px; }
+
+  /* Question card */
+  .question-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 36px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    animation: cardIn 0.4s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .question-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan), transparent);
+    opacity: 0.5;
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .q-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent-cyan);
+    background: rgba(6,182,212,0.1);
+    border: 1px solid rgba(6,182,212,0.2);
+    padding: 3px 10px;
+    border-radius: 100px;
+  }
+  .q-cat {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 3px 10px;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .q-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.7;
+    margin-bottom: 28px;
+    color: var(--text-primary);
+  }
+
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+
+  .choice-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.03);
+    color: var(--text-secondary);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.95rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.18s;
+    width: 100%;
+    line-height: 1.6;
+  }
+  .choice-btn:hover:not(:disabled) {
+    border-color: rgba(59,130,246,0.4);
+    background: rgba(59,130,246,0.06);
+    color: var(--text-primary);
+    transform: translateX(4px);
+  }
+  .choice-key {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.18s;
+  }
+
+  .choice-btn.correct {
+    border-color: var(--accent-green);
+    background: rgba(16,185,129,0.1);
+    color: var(--text-primary);
+  }
+  .choice-btn.correct .choice-key {
+    background: var(--accent-green);
+    color: white;
+  }
+  .choice-btn.wrong {
+    border-color: var(--accent-red);
+    background: rgba(239,68,68,0.08);
+    color: var(--text-muted);
+  }
+  .choice-btn.wrong .choice-key {
+    background: var(--accent-red);
+    color: white;
+  }
+  .choice-btn.reveal-correct {
+    border-color: var(--accent-green);
+    background: rgba(16,185,129,0.07);
+  }
+  .choice-btn:disabled { cursor: default; }
+
+  /* Feedback */
+  .feedback {
+    margin-top: 20px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .feedback.show { display: block; }
+  .feedback.correct-fb { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+  .feedback.wrong-fb { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); color: #fca5a5; }
+
+  /* Navigation */
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .nav-btn {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 12px 28px;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+  .nav-btn.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: white; font-weight: 700; }
+  .nav-btn.primary:hover { background: #2563eb; }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+  /* Result screen */
+  .result-screen {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+    animation: cardIn 0.5s ease;
+  }
+  .result-screen.show { display: block; }
+  .result-score {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(4rem, 10vw, 7rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .result-label { font-size: 1rem; color: var(--text-secondary); margin-bottom: 40px; }
+  .result-msg { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+  .result-sub { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 40px; }
+  .result-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  /* Review mode */
+  .review-header {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    color: var(--accent-gold);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  .wrong-badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 100px;
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #fca5a5;
+    margin-left: 8px;
+  }
+
+  /* Main area toggle */
+  #quiz-area { display: block; }
+
+  @media (max-width: 600px) {
+    .question-card { padding: 24px 18px; }
+    .q-text { font-size: 1rem; }
+    .choice-btn { font-size: 0.88rem; padding: 13px 15px; }
+    h1 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars-bg" id="stars"></div>
+<div class="nebula nebula-1"></div>
+<div class="nebula nebula-2"></div>
+
+<div class="container">
+  <header>
+    <div class="badge">2025年度 特別公開講座</div>
+    <h1>宇宙ビジネス入門</h1>
+    <p class="subtitle">全38問 ｜ テスト勉強モード</p>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-chip total"><div class="num" id="stat-total">38</div><div class="label">総問題数</div></div>
+    <div class="stat-chip correct"><div class="num" id="stat-correct">0</div><div class="label">正解</div></div>
+    <div class="stat-chip wrong"><div class="num" id="stat-wrong">0</div><div class="label">不正解</div></div>
+    <div class="stat-chip remaining"><div class="num" id="stat-remaining">38</div><div class="label">残り</div></div>
+  </div>
+
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <div class="progress-text" id="progress-text">0 / 38</div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="setCategory('all')">すべて</button>
+    <button class="tab" onclick="setCategory('基礎')">基礎（10問）</button>
+    <button class="tab" onclick="setCategory('歴史')">歴史（6問）</button>
+    <button class="tab" onclick="setCategory('政策')">政策・法制度（6問）</button>
+    <button class="tab" onclick="setCategory('技術')">技術（8問）</button>
+    <button class="tab" onclick="setCategory('新規事業')">新規事業（8問）</button>
+  </div>
+
+  <!-- Mode -->
+  <div class="mode-wrap">
+    <button class="mode-btn active" id="mode-quiz" onclick="setMode('quiz')">🎯 問題を解く</button>
+    <button class="mode-btn" id="mode-review" onclick="setMode('review')">📚 答えを確認</button>
+    <button class="mode-btn" id="mode-wrong" onclick="setMode('wrong')">❌ 間違えた問題</button>
+  </div>
+
+  <!-- Quiz area -->
+  <div id="quiz-area"></div>
+  <div id="result-screen" class="result-screen"></div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  // 基礎 10問
+  { id:1, cat:'基礎', q:'近年、宇宙ビジネスが急速に拡大している理由の一つとして適切なものはどれですか。', choices:['宇宙飛行士の増加','打上げコストの低下','月面基地の建設','宇宙船の大型化'], ans:1 },
+  { id:2, cat:'基礎', q:'国際競争が激化しているロケット分野において、日本が特に向上させる必要があるとされている課題は何ですか。', choices:['ロケットのサイズ','宇宙飛行士の人数','ロケットの打上げ回数','宇宙港の数'], ans:2 },
+  { id:3, cat:'基礎', q:'次のうち、宇宙技術が活用されていないものはどれですか。', choices:['地図アプリ','天気予報','防衛','すべて活用されている'], ans:3 },
+  { id:4, cat:'基礎', q:'人工衛星によるデータ利用は、歴史的にどの分野の需要によって大きく発展してきましたか。', choices:['農業','観光','防衛（安全保障）','エンターテインメント'], ans:2 },
+  { id:5, cat:'基礎', q:'2025年におけるSpaceX社のFalcon 9ロケットの年間打上げ回数に最も近いものはどれですか。', choices:['5回','54回','165回','390回'], ans:2 },
+  { id:6, cat:'基礎', q:'近年のロケット開発における重要なトレンドとして最も適切なものはどれですか。', choices:['巨大化','再使用化','海上打上げ','有翼化'], ans:1 },
+  { id:7, cat:'基礎', q:'軌道上サービス（On-orbit Service）を提供する日本企業として代表的なものはどれですか。', choices:['アストロスケール','QPS研究所','アクセルスペース','Synspective'], ans:0 },
+  { id:8, cat:'基礎', q:'近年、多数の小型衛星を打ち上げてサービスを提供する方式は一般に何と呼ばれますか。', choices:['コンステレーション','ドッキング','フォーメーションフライト','ライドシェア'], ans:0 },
+  { id:9, cat:'基礎', q:'SpaceX社が提供しているStarlinkサービスは、人工衛星としてどの用途に分類されますか。', choices:['地球観測','通信','測位','エンターテインメント'], ans:1 },
+  { id:10, cat:'基礎', q:'NASAが主導し、月面での有人活動の実現を目指しているプログラムはどれですか。', choices:['Apollo','Artemis','Voyager','Skylab'], ans:1 },
+
+  // 歴史 6問
+  { id:11, cat:'歴史', q:'世界で初めて人工衛星を打ち上げた国はどこですか。', choices:['アメリカ','日本','ソ連（旧ソビエト連邦）','中国'], ans:2 },
+  { id:12, cat:'歴史', q:'宇宙開発競争が激化した背景となった国際関係はどれですか。', choices:['冷戦','第一次世界大戦','EU統合','石油危機'], ans:0 },
+  { id:13, cat:'歴史', q:'1969年に日本政府が定めた、宇宙開発の用途を「非核・非軍事」に限定する考え方は何と呼ばれますか。', choices:['宇宙基本法','宇宙の平和利用原則','宇宙安全保障原則','宇宙活動法'], ans:1 },
+  { id:14, cat:'歴史', q:'国際宇宙ステーション（ISS）は主にどのような目的で建設された施設ですか。', choices:['宇宙旅行のため','宇宙での科学研究のため','軍事監視のため','月探査のため'], ans:1 },
+  { id:15, cat:'歴史', q:'2008年に日本で制定され、宇宙開発利用の基本方針を定めた法律はどれですか。', choices:['宇宙基本法','宇宙活動法','航空法','国際宇宙条約'], ans:0 },
+  { id:16, cat:'歴史', q:'近年、宇宙分野において急速に台頭し、アメリカとの競争が激化している国はどこですか。', choices:['インド','中国','フランス','オーストラリア'], ans:1 },
+
+  // 政策 6問
+  { id:17, cat:'政策', q:'日本の宇宙政策の司令塔となっている政府機関はどこですか。', choices:['文部科学省','経済産業省','内閣府','防衛省'], ans:2 },
+  { id:18, cat:'政策', q:'日本の宇宙政策の基本方針を定める最上位の計画はどれですか。', choices:['宇宙開発計画','宇宙基本計画','宇宙戦略指針','宇宙産業計画'], ans:1 },
+  { id:19, cat:'政策', q:'人工衛星の周波数利用について、日本国内で無線局免許を管轄する省庁はどこですか。', choices:['文部科学省','経済産業省','総務省','国土交通省'], ans:2 },
+  { id:20, cat:'政策', q:'2023年に策定された、日本の宇宙安全保障に関する政策はどれですか。', choices:['宇宙安全保障構想','宇宙防衛戦略','宇宙安全利用政策','宇宙軍事戦略'], ans:0 },
+  { id:21, cat:'政策', q:'政府が設置した1兆円規模の基金「宇宙戦略基金」の主な目的はどれですか。', choices:['宇宙旅行の促進','民間企業の宇宙活動支援','軍事衛星の開発','宇宙港の整備'], ans:1 },
+  { id:22, cat:'政策', q:'宇宙条約などのように、法的拘束力を持つ国際法は一般に何と呼ばれますか。', choices:['ソフトロー','ハードロー','慣習法','指針法'], ans:1 },
+
+  // 技術 8問
+  { id:23, cat:'技術', q:'ロケットの燃料として「固体ロケット」の特徴はどれですか？', choices:['推力を細かく調整でき、再点火もできる','液体酸素と組み合わせて使う','安価で長期保存が可能だが、再使用が難しい','煤が出にくく再使用に向いている'], ans:2 },
+  { id:24, cat:'技術', q:'再使用ロケットが「今」実現できるようになった理由としてもっとも正しいものはどれですか？', choices:['ロケットエンジンの重さが半分になったから','固体燃料が改良されたから','宇宙の真空が利用できるようになったから','凸最適化・高速データ処理・耐久素材の技術が成熟したから'], ans:3 },
+  { id:25, cat:'技術', q:'宇宙（低軌道）の環境について正しいものはどれですか？', choices:['地上と同じ1気圧で、温度変化もほとんどない','ほぼ真空で、温度が－120～+120℃の範囲で急変する','重力が地上の2倍になる','紫外線しか届かない'], ans:1 },
+  { id:26, cat:'技術', q:'COTS（コッツ）とは宇宙産業でどういう意味ですか？', choices:['宇宙専用の特殊な高品質部品のこと','宇宙機関が共同開発したロケット規格','商業的に入手可能な市販部品を宇宙用途に転用すること','衛星データを市販するサービスモデル'], ans:2 },
+  { id:27, cat:'技術', q:'人工衛星がミッション終了後に行う処理として推奨されているものはどれですか。', choices:['地球へ帰還する','軌道離脱（デオービット）','月へ移動する','宇宙空間に放置する'], ans:1 },
+  { id:28, cat:'技術', q:'「エッジAI」を衛星に搭載するメリットはどれですか？', choices:['衛星上でAI処理を行い、必要なデータだけを地上に送れる','地上のデータセンターに全画像を即時送信できる','衛星の推進剤を節約できる','太陽電池の発電量を増やせる'], ans:0 },
+  { id:29, cat:'技術', q:'ECLSSが管理する要素に含まれないものはどれですか？', choices:['空気（CO₂除去・酸素再生）','水（尿・汗を飲料水にリサイクル）','温度（船内を一定温度に維持）','推進剤（ロケット燃料の管理）'], ans:3 },
+  { id:30, cat:'技術', q:'ISRU（イスル）を説明する技術としてもっとも適しているものはどれですか？', choices:['月や火星の現地資源を使って水・酸素・燃料を作る技術','衛星間のデータを中継する技術','宇宙ステーションの再使用計画に関する技術','衛星のソフトウェアを遠隔更新する技術'], ans:0 },
+
+  // 新規事業 8問
+  { id:31, cat:'新規事業', q:'衛星データを活用したビジネスの例として適切なものはどれですか。', choices:['駐車場の車の数の分析','石油タンクの貯蔵量の推定','農作物の生育状況の分析','上記すべて'], ans:3 },
+  { id:32, cat:'新規事業', q:'衛星データを利用したサービス（農業、金融分析など）は一般的に何と呼ばれますか。', choices:['アップストリーム','ダウンストリーム','インフラ層','研究層'], ans:1 },
+  { id:33, cat:'新規事業', q:'近年の宇宙ビジネスの拡大を支えている技術トレンドの一つはどれですか。', choices:['衛星の大型化','衛星の小型化・低コスト化','ロケットの大型化','衛星の高価格化'], ans:1 },
+  { id:34, cat:'新規事業', q:'月面輸送サービスなどの月ビジネスに取り組んでいる日本企業はどれですか。', choices:['ispace','NEC','日産','ANA'], ans:0 },
+  { id:35, cat:'新規事業', q:'宇宙ビジネスにおいて、宇宙産業と非宇宙産業が連携することの主な目的は何ですか。', choices:['宇宙技術をより多くの産業で活用するため','宇宙飛行士を増やすため','ロケットのサイズを大きくするため','宇宙機関を減らすため'], ans:0 },
+  { id:36, cat:'新規事業', q:'宇宙ビジネスの拡大によって期待されている分野の一つはどれですか。', choices:['宇宙観光','宇宙農業','宇宙製造','上記すべて'], ans:3 },
+  { id:37, cat:'新規事業', q:'宇宙ビジネスを成功させるために重要とされる考え方はどれですか。', choices:['技術だけを重視する','技術と社会ニーズを結びつける','政府だけに任せる','宇宙機関だけで行う'], ans:1 },
+  { id:38, cat:'新規事業', q:'宇宙ビジネスの新しい企業が増えている背景として適切なものはどれですか。', choices:['技術の進歩','民間投資の増加','打上げコストの低下','上記すべて'], ans:3 },
+];
+
+const KEYS = ['A','B','C','D'];
+let mode = 'quiz';
+let category = 'all';
+let questions = [];
+let current = 0;
+let answered = false;
+let correctCount = 0;
+let wrongCount = 0;
+let wrongIds = new Set();
+let answeredIds = new Set();
+let userAnswers = {};
+
+function filterQuestions() {
+  if (mode === 'wrong') {
+    if (wrongIds.size === 0) {
+      questions = [];
+    } else {
+      questions = ALL_QUESTIONS.filter(q => wrongIds.has(q.id));
+    }
+  } else {
+    const catMap = { 'all': null, '基礎': '基礎', '歴史': '歴史', '政策': '政策', '技術': '技術', '新規事業': '新規事業' };
+    const cat = catMap[category];
+    questions = cat ? ALL_QUESTIONS.filter(q => q.cat === cat) : [...ALL_QUESTIONS];
+  }
+}
+
+function setCategory(cat) {
+  category = cat;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  reset();
+}
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mode-' + m).classList.add('active');
+  reset();
+}
+
+function reset() {
+  current = 0;
+  answered = false;
+  correctCount = 0;
+  wrongCount = 0;
+  answeredIds = new Set();
+  userAnswers = {};
+  filterQuestions();
+  updateStats();
+  document.getElementById('result-screen').classList.remove('show');
+  renderQuestion();
+}
+
+function updateStats() {
+  const total = questions.length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-correct').textContent = correctCount;
+  document.getElementById('stat-wrong').textContent = wrongCount;
+  document.getElementById('stat-remaining').textContent = Math.max(0, total - answeredIds.size);
+  const pct = total > 0 ? (answeredIds.size / total * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = answeredIds.size + ' / ' + total;
+}
+
+function renderQuestion() {
+  const area = document.getElementById('quiz-area');
+  if (questions.length === 0) {
+    if (mode === 'wrong') {
+      area.innerHTML = `<div class="question-card" style="text-align:center;padding:60px 30px">
+        <div style="font-size:3rem;margin-bottom:16px">🎉</div>
+        <div style="font-size:1.2rem;font-weight:700;color:var(--accent-green)">間違えた問題はありません</div>
+        <div style="font-size:0.9rem;color:var(--text-muted);margin-top:8px">まず「問題を解く」モードで挑戦してみましょう</div>
+      </div>`;
+    } else {
+      area.innerHTML = '';
+    }
+    return;
+  }
+  if (current >= questions.length) {
+    showResult();
+    area.innerHTML = '';
+    return;
+  }
+
+  const q = questions[current];
+  answered = userAnswers.hasOwnProperty(q.id);
+
+  if (mode === 'review') {
+    renderReview(q);
+    return;
+  }
+
+  const choicesHtml = q.choices.map((c, i) => {
+    let cls = 'choice-btn';
+    let disabled = '';
+    if (answered) {
+      disabled = 'disabled';
+      if (i === q.ans) cls += ' correct';
+      if (userAnswers[q.id] === i && i !== q.ans) cls += ' wrong';
+    }
+    return `<button class="${cls}" ${disabled} onclick="answer(${i})">
+      <span class="choice-key">${KEYS[i]}</span>
+      <span>${c}</span>
+    </button>`;
+  }).join('');
+
+  let feedbackHtml = '';
+  if (answered) {
+    const correct = userAnswers[q.id] === q.ans;
+    feedbackHtml = `<div class="feedback ${correct ? 'correct-fb' : 'wrong-fb'} show">
+      ${correct ? '✅ 正解！' : `❌ 不正解。正解は <strong>${KEYS[q.ans]}：${q.choices[q.ans]}</strong> です。`}
+    </div>`;
+  }
+
+  const navDisabledPrev = current === 0 ? 'disabled' : '';
+  const navLabelNext = current === questions.length - 1 ? '結果を見る' : '次の問題 →';
+
+  area.innerHTML = `
+    <div class="question-card">
+      <div class="q-meta">
+        <span class="q-num">Q${current + 1} / ${questions.length}</span>
+        <span class="q-cat">${q.cat}</span>
+      </div>
+      <div class="q-text">${q.q}</div>
+      <div class="choices">${choicesHtml}</div>
+      ${feedbackHtml}
+    </div>
+    <div class="nav-row">
+      <button class="nav-btn" onclick="prevQuestion()" ${navDisabledPrev}>← 前の問題</button>
+      <button class="nav-btn primary" onclick="nextQuestion()" ${answered || mode==='review' ? '' : 'disabled'}>${navLabelNext}</button>
+    </div>
+  `;
+}
+
+function renderReview(q) {
+  const area = document.getElementById('quiz-area');
+  const choicesHtml = q.choices.map((c, i) => {
+    let cls = 'choice-btn ' + (i === q.ans ? 'correct' : '');
+    return `<button class="${cls}" disabled>
+      <span class="choice-key">${KEYS[i]}</span>
+      <span>${c}</span>
+    </button>`;
+  }).join('');
+
+  const ua = userAnswers[q.id];
+  let statusHtml = '';
+  if (ua !== undefined) {
+    statusHtml = ua === q.ans
+      ? `<span style="color:var(--accent-green);font-size:0.8rem">✅ 以前正解</span>`
+      : `<span style="color:var(--accent-red);font-size:0.8rem">❌ 以前不正解（選んだ答え：${KEYS[ua]}）</span>`;
+  }
+
+  area.innerHTML = `
+    <div class="review-header">REVIEW MODE — 答えを確認</div>
+    <div class="question-card">
+      <div class="q-meta">
+        <span class="q-num">Q${current + 1} / ${questions.length}</span>
+        <span class="q-cat">${q.cat}</span>
+        ${statusHtml}
+      </div>
+      <div class="q-text">${q.q}</div>
+      <div class="choices">${choicesHtml}</div>
+      <div class="feedback correct-fb show">✅ 正解：${KEYS[q.ans]}「${q.choices[q.ans]}」</div>
+    </div>
+    <div class="nav-row">
+      <button class="nav-btn" onclick="prevQuestion()" ${current === 0 ? 'disabled' : ''}>← 前</button>
+      <button class="nav-btn primary" onclick="nextQuestion()">次 →</button>
+    </div>
+  `;
+}
+
+function answer(i) {
+  if (answered) return;
+  const q = questions[current];
+  userAnswers[q.id] = i;
+  answeredIds.add(q.id);
+  answered = true;
+  if (i === q.ans) {
+    correctCount++;
+  } else {
+    wrongCount++;
+    wrongIds.add(q.id);
+  }
+  updateStats();
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (current < questions.length - 1) {
+    current++;
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function prevQuestion() {
+  if (current > 0) {
+    current--;
+    renderQuestion();
+  }
+}
+
+function showResult() {
+  const area = document.getElementById('quiz-area');
+  area.innerHTML = '';
+  const rs = document.getElementById('result-screen');
+  const total = questions.length;
+  const pct = total > 0 ? Math.round(correctCount / total * 100) : 0;
+  let msg = '', sub = '';
+  if (pct >= 90) { msg = '🚀 すばらしい！'; sub = 'ほぼ完璧です。本番も自信を持って！'; }
+  else if (pct >= 70) { msg = '⭐ よくできました！'; sub = '間違えた問題を復習しておきましょう。'; }
+  else if (pct >= 50) { msg = '📚 もう少しです！'; sub = '苦手な分野を重点的に復習しましょう。'; }
+  else { msg = '💪 もっと頑張ろう！'; sub = '間違えた問題モードで繰り返し練習しましょう。'; }
+
+  rs.innerHTML = `
+    <div class="result-score">${pct}<span style="font-size:0.4em">%</span></div>
+    <div class="result-label">${correctCount} / ${total} 問正解</div>
+    <div class="result-msg">${msg}</div>
+    <div class="result-sub">${sub}</div>
+    <div class="result-actions">
+      <button class="nav-btn primary" onclick="retryAll()">🔄 もう一度</button>
+      <button class="nav-btn" onclick="retryWrong()" ${wrongIds.size===0?'disabled':''}>❌ 間違えた問題のみ（${wrongIds.size}問）</button>
+    </div>
+  `;
+  rs.classList.add('show');
+}
+
+function retryAll() {
+  correctCount = 0; wrongCount = 0; answeredIds = new Set(); userAnswers = {};
+  wrongIds = new Set();
+  current = 0;
+  filterQuestions();
+  updateStats();
+  document.getElementById('result-screen').classList.remove('show');
+  renderQuestion();
+}
+
+function retryWrong() {
+  setMode('wrong');
+}
+
+// Generate stars
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 150; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.cssText = `
+    left:${Math.random()*100}%;top:${Math.random()*100}%;
+    --dur:${2+Math.random()*4}s;--delay:${Math.random()*4}s;
+    --op:${0.3+Math.random()*0.7};
+    width:${Math.random()<0.9?'1px':'3px'};
+    height:${Math.random()<0.9?'1px':'3px'};
+  `;
+  starsEl.appendChild(s);
+}
+
+// Init
+reset();
+</script>
+</body>
+</html>
